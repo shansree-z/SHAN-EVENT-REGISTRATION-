@@ -28,7 +28,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🔥 ShanEventz Registration")
+st.title("ShanEventz Registration")
 
 # 2. GOOGLE FORM SUBMISSION URL
 FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc88KKudFh42JScl6jNf_mchbespeaIChDLrv7OSmMfYmx1uA/formResponse"
