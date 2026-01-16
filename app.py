@@ -1,8 +1,7 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
+import requests
 
-# 1. VISUALS: Bold Red/Black Gradient
+# 1. UI Styling (Red & Black Gradient)
 st.markdown("""
 <style>
 .stApp { background: linear-gradient(135deg, #000000 0%, #8b0000 100%); color: white; }
@@ -17,10 +16,10 @@ label { color: #ff4b4b !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("ShanEventz Registration")
+st.title("🔥 ShanEventz Registration")
 
-# 2. GOOGLE SHEETS CONNECTION
-conn = st.connection("gsheets", type=GSheetsConnection)
+# Google Form Submission URL (Change 'viewform' to 'formResponse')
+FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc88KKudFh42JScl6jNf_mchbespeaIChDLrv7OSmMfYmx1uA/formResponse"
 
 with st.form("registration_form"):
     col1, col2 = st.columns(2)
@@ -33,26 +32,31 @@ with st.form("registration_form"):
         phone = st.text_input("Phone Number")
         dob = st.date_input("Date of Birth")
 
-    st.write("### Choose Your Tracks")
+    st.write("### Select Your Events")
     tech = st.multiselect("Technical", ["Coding War", "AI Hackathon", "Web Design", "Robot Race", "Data Quiz"])
-    non_tech = st.multiselect("Non-Technical", ["Photography", "Gaming (BGMI)", "Standup Comedy", "Treasure Hunt", "Film Making"])
+    non_tech = st.multiselect("Non-Technical", ["Photography", "Gaming (BGMI)", "Standup Comedy", "Treasure Hunt"])
 
-    if st.form_submit_button("REGISTER"):
-        if fname and email and (tech or non_tech):
-            # Format data for the sheet
-            new_row = pd.DataFrame([{
-                "First Name": fname, "Last Name": lname, "Age": age,
-                "Date of Birth": str(dob), "Phone Number": phone, "Email ID": email,
-                "Technical Events": ", ".join(tech), "Non-Technical Events": ", ".join(non_tech)
-            }])
+    if st.form_submit_button("REGISTER NOW"):
+        if fname and email:
+            # Mapping data to your Google Form IDs
+            form_data = {
+                "entry.290432123": fname,
+                "entry.37629806": lname,
+                "entry.1833594203": age,
+                "entry.1720808553": str(dob),
+                "entry.743410951": phone,
+                "entry.1526759683": email,
+                "entry.1830788331": tech, # Multiselects work as lists
+                "entry.1742901975": non_tech
+            }
             
-            # Read existing, append new, and update
-            existing_data = conn.read()
-            updated_df = pd.concat([existing_data, new_row], ignore_index=True)
-            conn.update(data=updated_df)
-            
-            st.success(f"Successfully Registered, {fname}!")
-            st.balloons()
+            try:
+                # Sending the data
+                response = requests.post(FORM_URL, data=form_data)
+                st.success(f"🎉 Success! {fname}, your registration is recorded.")
+                st.balloons()
+            except:
+                st.error("Submission failed. Check your internet connection.")
         else:
-            st.error("Please fill required fields!")
+            st.error("Please fill in the required fields!")
             
