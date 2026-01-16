@@ -1,17 +1,18 @@
 import streamlit as st
 import requests
 
-# 1. VISUALS: Bold Red/Black Gradient + HIDING GITHUB BAR
+# 1. HIDE GITHUB HEADER & FORK ICON + STYLING
 st.set_page_config(page_title="ShanEventz", layout="centered")
 
 st.markdown("""
     <style>
-    /* Hides the GitHub 'Fork' and Streamlit header */
+    /* Hides the GitHub Fork icon and Streamlit header */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
+    #GithubIcon {visibility: hidden;}
 
-    /* Your Red and Black Theme */
+    /* Your Bold Red and Black Theme */
     .stApp { background: linear-gradient(135deg, #000000 0%, #8b0000 100%); color: white; }
     [data-testid="stForm"] {
         background: rgba(255, 255, 255, 0.05);
@@ -24,12 +25,12 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("ShanEventz Registration")
+st.title("🔥 ShanEventz Registration")
 
-# 2. DATA STORAGE (Google Form POST Method)
+# 2. GOOGLE FORM SUBMISSION URL (Endpoint for data)
 FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc88KKudFh42JScl6jNf_mchbespeaIChDLrv7OSmMfYmx1uA/formResponse"
 
-with st.form("registration_form"):
+with st.form("registration_form", clear_on_submit=True):
     col1, col2 = st.columns(2)
     with col1:
         fname = st.text_input("First Name")
@@ -41,12 +42,13 @@ with st.form("registration_form"):
         dob = st.date_input("Date of Birth")
 
     st.write("### Choose Your Tracks")
-    tech = st.multiselect("Technical", ["Coding War", "AI Hackathon", "Web Design", "Robot Race", "Data Quiz"])
+    tech = st.multiselect("Technical", ["Coding War", "Ai Hackathon", "Web Design", "Robot Race", "Data Quiz"])
     non_tech = st.multiselect("Non-Technical", ["Photography", "Gaming (BGMI)", "Standup Comedy", "Treasure Hunt"])
 
     if st.form_submit_button("REGISTER NOW"):
         if fname and email:
-            # Mapping to your Form IDs
+            # Mapping to your exact Entry IDs
+            # IMPORTANT: Multiselect values must be joined into one string
             form_payload = {
                 "entry.290432123": fname,
                 "entry.37629806": lname,
@@ -58,12 +60,15 @@ with st.form("registration_form"):
                 "entry.1742901975": ", ".join(non_tech)
             }
             try:
-                # Sending the request
-                requests.post(FORM_URL, data=form_payload)
-                st.success(f"🎉 Success! {fname}, you are registered.")
-                st.balloons()
-            except:
-                st.error("Submission error. Please try again.")
+                # Using a timeout to prevent the app from hanging
+                response = requests.post(FORM_URL, data=form_payload, timeout=10)
+                if response.status_code == 200:
+                    st.success(f"🎉 Success! {fname}, your registration is recorded.")
+                    st.balloons()
+                else:
+                    st.error("Submission failed. Check if your Form is accepting responses.")
+            except Exception as e:
+                st.error("Network issue. Please try again.")
         else:
-            st.error("Required: First Name & Email.")
+            st.error("Please fill in First Name and Email.")
             
