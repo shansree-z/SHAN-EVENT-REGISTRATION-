@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-# 1. HIDE GITHUB HEADER & FORK ICON + STYLING
+# 1. PAGE CONFIG & UI STYLING (Hiding GitHub/Header + Red & Black Theme)
 st.set_page_config(page_title="ShanEventz", layout="centered")
 
 st.markdown("""
@@ -12,8 +12,11 @@ st.markdown("""
     footer {visibility: hidden;}
     #GithubIcon {visibility: hidden;}
 
-    /* Your Bold Red and Black Theme */
-    .stApp { background: linear-gradient(135deg, #000000 0%, #8b0000 100%); color: white; }
+    /* Bold Red and Black Theme */
+    .stApp { 
+        background: linear-gradient(135deg, #000000 0%, #8b0000 100%); 
+        color: white; 
+    }
     [data-testid="stForm"] {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
@@ -27,7 +30,7 @@ st.markdown("""
 
 st.title("🔥 ShanEventz Registration")
 
-# 2. GOOGLE FORM SUBMISSION URL (Endpoint for data)
+# 2. GOOGLE FORM SUBMISSION URL
 FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc88KKudFh42JScl6jNf_mchbespeaIChDLrv7OSmMfYmx1uA/formResponse"
 
 with st.form("registration_form", clear_on_submit=True):
@@ -47,8 +50,7 @@ with st.form("registration_form", clear_on_submit=True):
 
     if st.form_submit_button("REGISTER NOW"):
         if fname and email:
-            # Mapping to your exact Entry IDs
-            # IMPORTANT: Multiselect values must be joined into one string
+            # Data Mapping (Joining lists into strings for Google Forms)
             form_payload = {
                 "entry.290432123": fname,
                 "entry.37629806": lname,
@@ -59,15 +61,19 @@ with st.form("registration_form", clear_on_submit=True):
                 "entry.1830788331": ", ".join(tech),
                 "entry.1742901975": ", ".join(non_tech)
             }
+            
+            # Browser Headers to prevent Google from blocking the request
+            headers = {'Referer': FORM_URL, 'User-Agent': "Mozilla/5.0"}
+            
             try:
-                # Using a timeout to prevent the app from hanging
-                response = requests.post(FORM_URL, data=form_payload, timeout=10)
+                response = requests.post(FORM_URL, data=form_payload, headers=headers)
+                # Success if code is 200 or it redirects
                 if response.status_code == 200:
                     st.success(f"🎉 Success! {fname}, your registration is recorded.")
                     st.balloons()
                 else:
-                    st.error("Submission failed. Check if your Form is accepting responses.")
-            except Exception as e:
+                    st.error("Submission failed. Ensure 'Collect Email' is OFF in Form Settings.")
+            except:
                 st.error("Network issue. Please try again.")
         else:
             st.error("Please fill in First Name and Email.")
